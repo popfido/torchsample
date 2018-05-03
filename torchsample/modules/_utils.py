@@ -14,16 +14,21 @@ import torch.optim as optim
 from ..metrics import Metric, CategoricalAccuracy, BinaryAccuracy
 from ..initializers import GeneralInitializer
 
+
 def _add_regularizer_to_loss_fn(loss_fn, 
                                 regularizer_container):
     def new_loss_fn(output_batch, target_batch):
         return loss_fn(output_batch, target_batch) + regularizer_container.get_value()
     return new_loss_fn
 
+
 def _is_iterable(x):
     return isinstance(x, (tuple, list))
+
+
 def _is_tuple_or_list(x):
     return isinstance(x, (tuple, list))
+
 
 def _parse_num_inputs_and_targets_from_loader(loader):
     """ NOT IMPLEMENTED """
@@ -31,6 +36,7 @@ def _parse_num_inputs_and_targets_from_loader(loader):
     num_inputs = loader.dataset.num_inputs
     num_targets = loader.dataset.num_targets
     return num_inputs, num_targets
+
 
 def _parse_num_inputs_and_targets(inputs, targets=None):
     if isinstance(inputs, (list, tuple)):
@@ -46,6 +52,7 @@ def _parse_num_inputs_and_targets(inputs, targets=None):
         num_targets = 0
     return num_inputs, num_targets
 
+
 def _standardize_user_data(inputs, targets=None):
     if not isinstance(inputs, (list,tuple)):
         inputs = [inputs]
@@ -55,6 +62,7 @@ def _standardize_user_data(inputs, targets=None):
         return inputs, targets
     else:
         return inputs
+
 
 def _validate_metric_input(metric):
     if isinstance(metric, str):
@@ -68,6 +76,7 @@ def _validate_metric_input(metric):
         return metric
     else:
         raise ValueError('Invalid metric input')
+
 
 def _validate_loss_input(loss):
     dir_f = dir(F)
@@ -90,6 +99,7 @@ def _validate_loss_input(loss):
     else:
         raise ValueError('Invalid loss input')
 
+
 def _validate_optimizer_input(optimizer):
     dir_optim = dir(optim)
     opts = [o.lower() for o in dir_optim]
@@ -104,6 +114,7 @@ def _validate_optimizer_input(optimizer):
     else:
         raise ValueError('Invalid optimizer input')
 
+
 def _validate_initializer_input(initializer):
     if isinstance(initializer, str):
         try:
@@ -115,6 +126,7 @@ def _validate_initializer_input(initializer):
         return initializer
     else:
         raise ValueError('Invalid optimizer input')
+
 
 def _get_current_time():
     return datetime.datetime.now().strftime("%B %d, %Y - %I:%M%p")

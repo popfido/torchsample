@@ -85,7 +85,7 @@ class UnitNorm(Constraint):
 
     def __call__(self, module):
         w = module.weight.data
-        module.weight.data = w.div(th.norm(w,2,0))
+        module.weight.data = w.div(th.norm(w, 2, 0))
 
 
 class MaxNorm(Constraint):

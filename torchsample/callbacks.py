@@ -25,6 +25,7 @@ import torch as th
 def _get_current_time():
     return datetime.datetime.now().strftime("%B %d, %Y - %I:%M%p")
 
+
 class CallbackContainer(object):
     """
     Container holding a list of callbacks.

@@ -86,7 +86,7 @@ def th_affine2d(x, matrix, mode='bilinear', center=True):
 
     Example
     ------- 
-    >>> import torch
+    >>> import torch as th
     >>> from torchsample.utils import *
     >>> x = th.zeros(2,1000,1000)
     >>> x[:,100:1500,100:500] = 10

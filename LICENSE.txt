@@ -1,5 +1,9 @@
 COPYRIGHT
 
+Some contributions by Fido (H. L.) Wang
+Copyright (c) 2018, Fido (H. L.) Wang:
+All rights reserved.
+
 Some contributions by Nicholas Cullen:
 Copyright (c) 2017, Nicholas Cullen:
 All rights reserved.

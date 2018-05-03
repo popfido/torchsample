@@ -251,7 +251,7 @@ class RandomChoiceRotate(object):
             if false, perform the transform on the tensor and return the tensor
         """
         if isinstance(values, (list, tuple)):
-            values = th.FloatTensor(values)
+            values = th.tensor(values)
         self.values = values
         if p is None:
             p = th.ones(len(values)) / len(values)
@@ -308,7 +308,7 @@ class Rotate(object):
             interp = self.interp
 
         theta = math.pi / 180 * self.value
-        rotation_matrix = th.FloatTensor([[math.cos(theta), -math.sin(theta), 0],
+        rotation_matrix = th.tensor([[math.cos(theta), -math.sin(theta), 0],
                                           [math.sin(theta), math.cos(theta), 0],
                                           [0, 0, 1]])
         if self.lazy:
@@ -409,7 +409,7 @@ class RandomChoiceTranslate(object):
             if false, perform the transform on the tensor and return the tensor
         """
         if isinstance(values, (list, tuple)):
-            values = th.FloatTensor(values)
+            values = th.tensor(values)
         self.values = values
         if p is None:
             p = th.ones(len(values)) / len(values)
@@ -475,9 +475,9 @@ class Translate(object):
         tx = self.height_range * inputs[0].size(1)
         ty = self.width_range * inputs[0].size(2)
 
-        translation_matrix = th.FloatTensor([[1, 0, tx],
-                                             [0, 1, ty],
-                                             [0, 0, 1]])
+        translation_matrix = th.tensor([[1, 0, tx],
+                                        [0, 1, ty],
+                                        [0, 0, 1]])
         if self.lazy:
             return translation_matrix
         else:
@@ -557,7 +557,7 @@ class RandomChoiceShear(object):
             if true, only create the affine transform matrix and return that
         """
         if isinstance(values, (list, tuple)):
-            values = th.FloatTensor(values)
+            values = th.tensor(values)
         self.values = values
         if p is None:
             p = th.ones(len(values)) / len(values)
@@ -597,7 +597,7 @@ class Shear(object):
             interp = self.interp
 
         theta = (math.pi * self.value) / 180
-        shear_matrix = th.FloatTensor([[1, -math.sin(theta), 0],
+        shear_matrix = th.tensor([[1, -math.sin(theta), 0],
                                         [0, math.cos(theta), 0],
                                         [0, 0, 1]])
         if self.lazy:
@@ -688,7 +688,7 @@ class RandomChoiceZoom(object):
             if true, only create the affine transform matrix and return that
         """
         if isinstance(values, (list, tuple)):
-            values = th.FloatTensor(values)
+            values = th.tensor(values)
         self.values = values
         if p is None:
             p = th.ones(len(values)) / len(values)
@@ -742,15 +742,15 @@ class Zoom(object):
         self.lazy = lazy
 
     def __call__(self, *inputs):
-        if not isinstance(self.interp, (tuple,list)):
+        if not isinstance(self.interp, (tuple, list)):
             interp = [self.interp]*len(inputs)
         else:
             interp = self.interp
 
         zx, zy = self.value
-        zoom_matrix = th.FloatTensor([[zx, 0, 0],
-                                      [0, zy, 0],
-                                      [0, 0,  1]])        
+        zoom_matrix = th.tensor([[zx, 0, 0],
+                                 [0, zy, 0],
+                                 [0, 0,  1]])
 
         if self.lazy:
             return zoom_matrix

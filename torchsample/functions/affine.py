@@ -1,7 +1,6 @@
 
 import torch
 import torch.nn.functional as F
-from torch.autograd import Variable
 
 from ..utils import th_iterproduct, th_flatten
 
@@ -20,7 +19,7 @@ def F_affine2d(x, matrix, center=True):
 
     # make a meshgrid of normal coordinates
     _coords = th_iterproduct(x.size(1),x.size(2))
-    coords = Variable(_coords.unsqueeze(0).repeat(x.size(0),1,1).float(),
+    coords = torch.tensor(_coords.unsqueeze(0).repeat(x.size(0),1,1).float(),
                     requires_grad=False)
     if center:
         # shift the coordinates so center is the origin
@@ -105,8 +104,8 @@ def F_batch_affine2d(x, matrix, center=True):
 
     # make a meshgrid of normal coordinates
     _coords = th_iterproduct(x.size(2),x.size(3))
-    coords = Variable(_coords.unsqueeze(0).repeat(x.size(0),1,1).float(),
-                requires_grad=False)
+    coords = torch.tensor(_coords.unsqueeze(0).repeat(x.size(0),1,1).float(),
+                dtype=torch.float, requires_grad=False)
 
     if center:
         # shift the coordinates so center is the origin
@@ -172,8 +171,8 @@ def F_affine3d(x, matrix, center=True):
     b = matrix[:3,3]
 
     # make a meshgrid of normal coordinates
-    coords = Variable(th_iterproduct(x.size(1),x.size(2),x.size(3)).float(),
-                requires_grad=False)
+    coords = torch.tensor(th_iterproduct(x.size(1),x.size(2),x.size(3)).float(),
+                dtype=torch.float ,requires_grad=False)
 
     if center:
         # shift the coordinates so center is the origin
@@ -214,7 +213,7 @@ def F_trilinear_interp3d(input, coords):
     z0 = z.floor()
     z1 = z0 + 1
 
-    stride = torch.LongTensor(input.stride())[1:]
+    stride = torch.tensor(input.stride(), dtype=torch.long)[1:]
     x0_ix = x0.mul(stride[0]).long()
     x1_ix = x1.mul(stride[0]).long()
     y0_ix = y0.mul(stride[1]).long()
@@ -263,12 +262,12 @@ def F_batch_affine3d(x, matrix, center=True):
 
     Example
     -------
-    >>> x = Variable(torch.zeros(3,1,10,10,10))
+    >>> x = torch.zeros(3,1,10,10,10)
     >>> x[:,:,3:7,3:7,3:7] = 1
-    >>> m1 = torch.FloatTensor([[1.2,0,0,0],[0,1.2,0,0],[0,0,1.2,0]])
-    >>> m2 = torch.FloatTensor([[0.8,0,0,0],[0,0.8,0,0],[0,0,0.8,0]])
-    >>> m3 = torch.FloatTensor([[1.0,0,0,3],[0,1.0,0,3],[0,0,1.0,3]])
-    >>> matrix = Variable(torch.stack([m1,m2,m3]))
+    >>> m1 = torch.tensor([[1.2,0,0,0],[0,1.2,0,0],[0,0,1.2,0]])
+    >>> m2 = torch.tensor([[0.8,0,0,0],[0,0.8,0,0],[0,0,0.8,0]])
+    >>> m3 = torch.tensor([[1.0,0,0,3],[0,1.0,0,3],[0,0,1.0,3]])
+    >>> matrix = torch.tensor(torch.stack([m1,m2,m3]), requires_grad=True)
     >>> xx = F_batch_affine3d(x,matrix)
     """
     if matrix.dim() == 2:
@@ -279,7 +278,7 @@ def F_batch_affine3d(x, matrix, center=True):
 
     # make a meshgrid of normal coordinates
     _coords = th_iterproduct(x.size(2),x.size(3),x.size(4))
-    coords = Variable(_coords.unsqueeze(0).repeat(x.size(0),1,1).float(),
+    coords = torch.tensor(_coords.unsqueeze(0).repeat(x.size(0),1,1).float(),
                 requires_grad=False)
     
     if center:
@@ -320,7 +319,7 @@ def F_batch_trilinear_interp3d(input, coords):
     z0 = z.floor()
     z1 = z0 + 1
 
-    stride = torch.LongTensor(input.stride())
+    stride = torch.tensor(input.stride(), dtype=torch.long)
     x0_ix = x0.mul(stride[2]).long()
     x1_ix = x1.mul(stride[2]).long()
     y0_ix = y0.mul(stride[3]).long()

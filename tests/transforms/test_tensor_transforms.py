@@ -294,7 +294,7 @@ def test_image_transforms_runtime(verbose=1):
     for im_key, im_val in images.items():
         for tf_key, tf_val in tforms.items():
             try:
-                if isinstance(im_val, (tuple,list)):
+                if isinstance(im_val, (tuple, list)):
                     tf_val(*im_val)
                 else:
                     tf_val(im_val)

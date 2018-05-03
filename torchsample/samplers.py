@@ -1,6 +1,7 @@
 
 import torch as th
-import math
+import numpy as np
+
 
 class Sampler(object):
     """Base class for all Samplers.
@@ -18,6 +19,7 @@ class Sampler(object):
 
     def __len__(self):
         raise NotImplementedError
+
 
 class StratifiedSampler(Sampler):
     """Stratified Sampling
@@ -39,10 +41,11 @@ class StratifiedSampler(Sampler):
     def gen_sample_array(self):
         try:
             from sklearn.model_selection import StratifiedShuffleSplit
-        except:
+        except ModuleNotFoundError:
             print('Need scikit-learn for this functionality')
-        import numpy as np
-        
+        except Exception:
+            print('There exists some errors in your scikit-learn installation')
+
         s = StratifiedShuffleSplit(n_splits=self.n_splits, test_size=0.5)
         X = th.randn(self.class_vector.size(0),2).numpy()
         y = self.class_vector.numpy()
@@ -57,6 +60,7 @@ class StratifiedSampler(Sampler):
     def __len__(self):
         return len(self.class_vector)
 
+
 class MultiSampler(Sampler):
     """Samples elements more than once in a single pass through the data.
 
@@ -70,7 +74,7 @@ class MultiSampler(Sampler):
         Arguments
         ---------
         data_source : the dataset to sample from
-        
+
         desired_samples : number of samples per batch you want
             whatever the difference is between an even division will
             be randomly selected from the samples.
@@ -80,7 +84,7 @@ class MultiSampler(Sampler):
 
         shuffle : boolean
             whether to shuffle the indices or not
-        
+
         Example:
             >>> m = MultiSampler(2, 6)
             >>> x = m.gen_sample_array()
@@ -94,7 +98,7 @@ class MultiSampler(Sampler):
         from torchsample.utils import th_random_choice
         n_repeats = self.desired_samples / self.data_samples
         cat_list = []
-        for i in range(math.floor(n_repeats)):
+        for i in range(np.floor(n_repeats)):
             cat_list.append(th.arange(0,self.data_samples))
         # add the left over samples
         left_over = self.desired_samples % self.data_samples
@@ -138,7 +142,7 @@ class RandomSampler(Sampler):
         self.num_samples = nb_samples
 
     def __iter__(self):
-        return iter(th.randperm(self.num_samples).long())
+        return iter(th.randperm(self.num_samples, dtype=th.long))
 
     def __len__(self):
         return self.num_samples

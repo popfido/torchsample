@@ -1,4 +1,4 @@
-
+# coding=utf-8
 import os
 import random
 import math
@@ -8,6 +8,7 @@ import torch as th
 from torch.autograd import Variable
 
 from ..utils import th_random_choice
+
 
 class Compose(object):
     """

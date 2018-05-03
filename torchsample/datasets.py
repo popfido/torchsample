@@ -9,7 +9,6 @@ import fnmatch
 import numpy as np
 import pandas as pd
 import PIL.Image as Image
-import nibabel
 
 import torch as th
 
@@ -264,13 +263,9 @@ def default_file_reader(x):
         return Image.open(path).convert('RGB')
     def npy_loader(path):
         return np.load(path)
-    def nifti_loader(path):
-        return nibabel.load(path).get_data()
     if isinstance(x, str):
         if x.endswith('.npy'):
             x = npy_loader(x)
-        elif x.endsiwth('.nii.gz'):
-            x = nifti_loader(x)
         else:
             try:
                 x = pil_loader(x)

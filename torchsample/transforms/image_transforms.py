@@ -54,6 +54,7 @@ class Grayscale(object):
             outputs.append(_input_gs)
         return outputs if idx > 1 else outputs[0]
 
+
 class RandomGrayscale(object):
 
     def __init__(self, p=0.5):
@@ -76,6 +77,7 @@ class RandomGrayscale(object):
 
 # ----------------------------------------------------
 # ----------------------------------------------------
+
 
 class Gamma(object):
 
@@ -102,6 +104,7 @@ class Gamma(object):
             _input = th.pow(_input, self.value)
             outputs.append(_input)
         return outputs if idx > 1 else outputs[0]
+
 
 class RandomGamma(object):
 
@@ -168,6 +171,7 @@ class RandomChoiceGamma(object):
 # ----------------------------------------------------
 # ----------------------------------------------------
 
+
 class Brightness(object):
     def __init__(self, value):
         """
@@ -191,6 +195,7 @@ class Brightness(object):
             outputs.append(_input)
         return outputs if idx > 1 else outputs[0]
 
+
 class RandomBrightness(object):
 
     def __init__(self, min_val, max_val):
@@ -211,6 +216,7 @@ class RandomBrightness(object):
         value = random.uniform(self.values[0], self.values[1])
         outputs = Brightness(value)(*inputs)
         return outputs
+
 
 class RandomChoiceBrightness(object):
 
@@ -238,6 +244,7 @@ class RandomChoiceBrightness(object):
 # ----------------------------------------------------
 # ----------------------------------------------------
 
+
 class Saturation(object):
 
     def __init__(self, value):
@@ -264,6 +271,7 @@ class Saturation(object):
             outputs.append(_in)
         return outputs if idx > 1 else outputs[0]
 
+
 class RandomSaturation(object):
 
     def __init__(self, min_val, max_val):
@@ -284,6 +292,7 @@ class RandomSaturation(object):
         value = random.uniform(self.values[0], self.values[1])
         outputs = Saturation(value)(*inputs)
         return outputs
+
 
 class RandomChoiceSaturation(object):
 
@@ -311,6 +320,7 @@ class RandomChoiceSaturation(object):
 
 # ----------------------------------------------------
 # ----------------------------------------------------
+
 
 class Contrast(object):
     """
@@ -345,6 +355,7 @@ class Contrast(object):
             outputs.append(_input)
         return outputs if idx > 1 else outputs[0]
 
+
 class RandomContrast(object):
 
     def __init__(self, min_val, max_val):
@@ -365,6 +376,7 @@ class RandomContrast(object):
         value = random.uniform(self.values[0], self.values[1])
         outputs = Contrast(value)(*inputs)
         return outputs
+
 
 class RandomChoiceContrast(object):
 
@@ -392,6 +404,7 @@ class RandomChoiceContrast(object):
 
 # ----------------------------------------------------
 # ----------------------------------------------------
+
 
 def rgb_to_hsv(x):
     """

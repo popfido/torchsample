@@ -8,8 +8,8 @@ from .utils import th_matrixcorr
 
 from .callbacks import Callback
 
-class MetricContainer(object):
 
+class MetricContainer(object):
 
     def __init__(self, metrics, prefix=''):
         self.metrics = metrics
@@ -31,6 +31,7 @@ class MetricContainer(object):
                                                                         metric) 
         return logs
 
+
 class Metric(object):
 
     def __call__(self, y_pred, y_true):
@@ -44,8 +45,10 @@ class MetricCallback(Callback):
 
     def __init__(self, container):
         self.container = container
+
     def on_epoch_begin(self, epoch_idx, logs):
         self.container.reset()
+
 
 class CategoricalAccuracy(Metric):
 

@@ -20,3 +20,6 @@ dist
 # Egg metadata
 *.egg-info
 .eggs
+
+.iml
+.idea/

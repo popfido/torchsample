@@ -1,8 +1,9 @@
+# coding=utf-8
 import unittest
 import torch
-from torch.autograd import Variable
 
 from torchsample.metrics import CategoricalAccuracy
+
 
 class TestMetrics(unittest.TestCase):
 
@@ -16,6 +17,7 @@ class TestMetrics(unittest.TestCase):
         predicted = torch.zeros(10, 10, requires_grad=True)
         predicted.data[:, 0] = torch.ones(10)
         self.assertEqual(metric(predicted, expected), 55.0)
+
 
 if __name__ == '__main__':
     unittest.main()

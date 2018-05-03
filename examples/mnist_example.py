@@ -52,33 +52,32 @@ class Network(nn.Module):
         x = self.fc2(x)
         return F.log_softmax(x)
 
+if __name__ == "__main__":
+    model = Network()
+    trainer = ModuleTrainer(model)
 
-model = Network()
-trainer = ModuleTrainer(model)
+    callbacks = [EarlyStopping(patience=10),
+                 ReduceLROnPlateau(factor=0.5, patience=5)]
+    regularizers = [L1Regularizer(scale=1e-3, module_filter='conv*'),
+                    L2Regularizer(scale=1e-5, module_filter='fc*')]
+    constraints = [UnitNorm(frequency=3, unit='batch', module_filter='fc*')]
+    initializers = [XavierUniform(bias=False, module_filter='fc*')]
+    metrics = [CategoricalAccuracy(top_k=3)]
 
+    trainer.compile(loss='nll_loss',
+                    optimizer='adadelta',
+                    regularizers=regularizers,
+                    constraints=constraints,
+                    initializers=initializers,
+                    metrics=metrics)
 
-callbacks = [EarlyStopping(patience=10),
-             ReduceLROnPlateau(factor=0.5, patience=5)]
-regularizers = [L1Regularizer(scale=1e-3, module_filter='conv*'),
-                L2Regularizer(scale=1e-5, module_filter='fc*')]
-constraints = [UnitNorm(frequency=3, unit='batch', module_filter='fc*')]
-initializers = [XavierUniform(bias=False, module_filter='fc*')]
-metrics = [CategoricalAccuracy(top_k=3)]
+    #summary = trainer.summary([1,28,28])
+    #print(summary)
 
-trainer.compile(loss='nll_loss',
-                optimizer='adadelta',
-                regularizers=regularizers,
-                constraints=constraints,
-                initializers=initializers,
-                metrics=metrics)
-
-#summary = trainer.summary([1,28,28])
-#print(summary)
-
-trainer.fit(x_train, y_train, 
-          val_data=(x_test, y_test),
-          num_epoch=20, 
-          batch_size=128,
-          verbose=1)
+    trainer.fit(x_train, y_train,
+              val_data=(x_test, y_test),
+              num_epoch=20,
+              batch_size=128,
+              verbose=1)
 
 

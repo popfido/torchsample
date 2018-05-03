@@ -1,12 +1,12 @@
-
+# coding=utf-8
 import datetime
 import warnings
 
 try:
     from inspect import signature
-except:
+except ModuleNotFoundError:
     warnings.warn('inspect.signature not available... '
-        'you should upgrade to Python 3.x')
+                  'we recommend you to upgrade to Python 3.x')
 
 import torch.nn.functional as F
 import torch.optim as optim
@@ -15,10 +15,11 @@ from ..metrics import Metric, CategoricalAccuracy, BinaryAccuracy
 from ..initializers import GeneralInitializer
 
 
-def _add_regularizer_to_loss_fn(loss_fn, 
+def _add_regularizer_to_loss_fn(loss_fn,
                                 regularizer_container):
     def new_loss_fn(output_batch, target_batch):
         return loss_fn(output_batch, target_batch) + regularizer_container.get_value()
+
     return new_loss_fn
 
 
@@ -32,7 +33,7 @@ def _is_tuple_or_list(x):
 
 def _parse_num_inputs_and_targets_from_loader(loader):
     """ NOT IMPLEMENTED """
-    #batch = next(iter(loader))
+    # batch = next(iter(loader))
     num_inputs = loader.dataset.num_inputs
     num_targets = loader.dataset.num_targets
     return num_inputs, num_targets
@@ -54,10 +55,10 @@ def _parse_num_inputs_and_targets(inputs, targets=None):
 
 
 def _standardize_user_data(inputs, targets=None):
-    if not isinstance(inputs, (list,tuple)):
+    if not isinstance(inputs, (list, tuple)):
         inputs = [inputs]
     if targets is not None:
-        if not isinstance(targets, (list,tuple)):
+        if not isinstance(targets, (list, tuple)):
             targets = [targets]
         return inputs, targets
     else:
@@ -105,7 +106,7 @@ def _validate_optimizer_input(optimizer):
     opts = [o.lower() for o in dir_optim]
     if isinstance(optimizer, str):
         try:
-            str_idx = opts.index(optimizer.lower())    
+            str_idx = opts.index(optimizer.lower())
         except:
             raise ValueError('Invalid optimizer string input - must match pytorch function.')
         return getattr(optim, dir_optim[str_idx])
@@ -130,6 +131,7 @@ def _validate_initializer_input(initializer):
 
 def _get_current_time():
     return datetime.datetime.now().strftime("%B %d, %Y - %I:%M%p")
+
 
 def _nb_function_args(fn):
     return len(signature(fn).parameters)

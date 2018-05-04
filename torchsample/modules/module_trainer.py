@@ -277,7 +277,7 @@ class ModuleTrainer(object):
                         metrics_logs = self.metric_container(output_batch, target_batch)
                         batch_logs.update(metrics_logs)
 
-                    batch_logs['loss'] = loss.data[0]
+                    batch_logs['loss'] = loss.item()
                     callback_container.on_batch_end(batch_idx, batch_logs)
 
                 if has_val_data:
@@ -509,7 +509,7 @@ class ModuleTrainer(object):
                 loss = eval_loss_fn(output_batch, target_batch)
 
                 samples_seen += batch_size
-                eval_logs['val_loss'] = (samples_seen * eval_logs['val_loss'] + loss.data[0] * batch_size) / (
+                eval_logs['val_loss'] = (samples_seen * eval_logs['val_loss'] + loss.item() * batch_size) / (
                             samples_seen + batch_size)
 
                 if self._has_metrics:

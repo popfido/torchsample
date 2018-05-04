@@ -31,6 +31,13 @@ def _is_tuple_or_list(x):
     return isinstance(x, (tuple, list))
 
 
+def _get_softmax_dim(name, ndim, stacklevel):
+    if ndim == 0 or ndim == 1 or ndim == 3:
+        return 0
+    else:
+        return 1
+
+
 def _parse_num_inputs_and_targets_from_loader(loader):
     """ NOT IMPLEMENTED """
     # batch = next(iter(loader))

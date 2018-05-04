@@ -23,3 +23,5 @@ dist
 
 .iml
 .idea/
+
+examples/data/

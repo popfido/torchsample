@@ -1,4 +1,4 @@
-
+# coding=utf-8
 import torch as th
 import torch.nn as nn
 import torch.nn.functional as F
@@ -12,8 +12,8 @@ from torchsample.metrics import CategoricalAccuracy
 
 import os
 from torchvision import datasets
-ROOT = '/users/ncullen/desktop/data/mnist'
-dataset = datasets.MNIST(ROOT, train=True, download=True)
+
+dataset = datasets.MNIST("./data", train=True, download=True)
 x_train, y_train = th.load(os.path.join(dataset.root, 'processed/training.pt'))
 x_test, y_test = th.load(os.path.join(dataset.root, 'processed/test.pt'))
 
@@ -34,6 +34,13 @@ x_test = x_test[:1000]
 y_test = y_test[:1000]
 
 
+def _get_softmax_dim(ndim):
+    if ndim == 0 or ndim == 1 or ndim == 3:
+        return 0
+    else:
+        return 1
+
+
 # Define your model EXACTLY as if you were using nn.Module
 class Network(nn.Module):
     def __init__(self):
@@ -50,7 +57,8 @@ class Network(nn.Module):
         x = F.relu(self.fc1(x))
         x = F.dropout(x, training=self.training)
         x = self.fc2(x)
-        return F.log_softmax(x)
+        return F.log_softmax(x, dim=_get_softmax_dim(x.dim()))
+
 
 if __name__ == "__main__":
     model = Network()

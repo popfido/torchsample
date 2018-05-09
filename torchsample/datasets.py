@@ -9,11 +9,15 @@ import fnmatch
 import numpy as np
 import pandas as pd
 import PIL.Image as Image
-
 import torch as th
 
-from . import transforms
+try:
+    import nibabel
+except ImportError:
+    pass
 
+from . import transforms
+from .utils import _check_import
 
 class BaseDataset(object):
     """An abstract class representing a Dataset.
@@ -258,22 +262,31 @@ class TensorDataset(BaseDataset):
             return self.input_return_processor(input_sample)
 
 
-def default_file_reader(x):
+def default_file_reader(file_path):
+
     def pil_loader(path):
         return Image.open(path).convert('RGB')
+
     def npy_loader(path):
         return np.load(path)
-    if isinstance(x, str):
-        if x.endswith('.npy'):
-            x = npy_loader(x)
+
+    def nifti_loader(path):
+        _check_import("nibabel")
+        return nibabel.load(path).get_data()
+
+    if isinstance(file_path, str):
+        if file_path.endswith('.npy'):
+            return npy_loader(file_path)
+        elif file_path.endswith('.nii.gz'):
+            return nifti_loader(file_path)
         else:
             try:
-                x = pil_loader(x)
+                return pil_loader(file_path)
             except:
                 raise ValueError('File Format is not supported')
-    #else:
-        #raise ValueError('x should be string, but got %s' % type(x))
-    return x
+    else:
+        raise ValueError('x should be string, but got %s' % type(file_path))
+    return None
 
 def is_tuple_or_list(x):
     return isinstance(x, (tuple,list))

@@ -28,6 +28,7 @@ from ..constraints import ConstraintContainer, ConstraintCallback
 from ..metrics import MetricContainer, MetricCallback
 from .Helper import *
 
+
 class ModuleTrainer(object):
 
     def __init__(self, model):

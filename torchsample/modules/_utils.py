@@ -8,6 +8,7 @@ except ModuleNotFoundError:
     warnings.warn('inspect.signature not available... '
                   'we recommend you to upgrade to Python 3.x')
 
+import torch as th
 import torch.nn.functional as F
 import torch.optim as optim
 
@@ -41,8 +42,11 @@ def _get_softmax_dim(name, ndim, stacklevel):
 def _parse_num_inputs_and_targets_from_loader(loader):
     """ NOT IMPLEMENTED """
     # batch = next(iter(loader))
-    num_inputs = loader.dataset.num_inputs
-    num_targets = loader.dataset.num_targets
+    if isinstance(loader.dataset, th.utils.data.dataset.Dataset):
+        num_inputs = num_targets = 1
+    else:
+        num_inputs = loader.dataset.num_inputs
+        num_targets = loader.dataset.num_targets
     return num_inputs, num_targets
 
 

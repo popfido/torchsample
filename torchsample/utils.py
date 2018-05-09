@@ -4,17 +4,28 @@ Utility functions for th.Tensors
 
 import pickle
 import random
+import sys
 import numpy as np
+import warnings
 
 import torch as th
 
 
-def th_allclose(x, y):
+def th_allclose(x, y, rtol=1.e-5, atol=1.e-8, equal_nan=False):
     """
-    Determine whether two torch tensors have same values
+    Returns True if two torch Tensors are equal within a tolerance.
     Mimics np.allclose
+    :param x, y : torch.Tensor
+        Input Tensors to compare.
+    :param rtol : float
+        The relative tolerance parameter (see Notes).
+    :param atol : float
+        The absolute tolerance parameter
+    :param equal_nan : bool
+        Whether to compare NaN's as equal.  If True, NaN' of `a` will be
+        considered equal to NaN' of `b` in the bool. (Not Implemented)
     """
-    return th.sum(th.abs(x-y)) < 1e-5
+    return th.sum(th.abs(x-y)) <= atol + rtol * th.sum(th.abs(y))
 
 
 def th_flatten(x):
@@ -419,7 +430,37 @@ def load_transform(file):
     with open(file, 'rb') as input_file:
         transform = pickle.load(input_file)
     return transform
-    
 
 
-    
+def _mode_dependent_param(mode, monitor, min_delta=0):
+    """Given the mode it returns the operator, best loss and delta respectively."""
+    if mode not in ['auto', 'min', 'max']:
+        warnings.warn('EarlyStopping mode %s is unknown, '
+                      'fallback to auto mode.' % mode,
+                      RuntimeWarning)
+        mode = 'auto'
+
+    if mode == "auto":
+        mode = 'max' if 'acc' in monitor else 'min'
+
+    if mode == 'min':
+        monitor_op = np.less
+        best_loss = np.Inf
+        min_delta *= -1
+
+    else:  # max
+        monitor_op = np.greater
+        best_loss = -np.Inf
+        min_delta *= 1
+
+    return monitor_op, best_loss, min_delta
+
+
+def _check_import(module):
+    """
+    Checks whether the given module is imported.
+    :param module: module name
+    :return:
+    """
+    if module not in sys.modules:
+        raise ImportError('{} module is not installed. Please install using "pip install {}".'.format(module, module))

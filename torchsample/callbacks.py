@@ -16,8 +16,7 @@ import time
 from tempfile import NamedTemporaryFile
 import shutil
 import datetime
-import numpy as np
-
+from .utils import _mode_dependent_param
 from tqdm import tqdm
 
 import torch as th
@@ -230,6 +229,13 @@ class ModelCheckpoint(Callback):
     """
     Model Checkpoint to save model weights during training
 
+    Example:
+    >>> trainer = ModuleTrainer()
+    >>> callback = [ModelCheckpoint('./', filename='ckpt.pth.tar', save_best_only=True, max_save=1)]
+    >>> trainer.compile(...,callbacks=callbacks,...)
+    >>> trainer.fit()
+    >>> checkpoint = th.load('ckpt.pth.tar')
+    >>> trainer.model.load_state_dict(checkpoint["state_dict"])
     save_checkpoint({
                 'epoch': epoch + 1,
                 'arch': args.arch,
@@ -251,6 +257,7 @@ class ModelCheckpoint(Callback):
                  save_best_only=False, 
                  save_weights_only=True,
                  max_save=-1,
+                 mode="auto",
                  verbose=0):
         """
         Model Checkpoint to save model weights during training
@@ -261,8 +268,8 @@ class ModelCheckpoint(Callback):
             file to which model will be saved.
             It can be written 'filename_{epoch}_{loss}' and those
             values will be filled in before saving.
-        monitor : string in {'val_loss', 'loss'}
-            whether to monitor train or val loss
+        monitor : string in {'val_loss', 'loss', 'val_*_metric', '*_metric'}
++            whether to monitor train or val loss. Can also give your metric ex: 'val_acc_metric'.
         save_best_only : boolean
             whether to only save if monitored value has improved
         save_weight_only : boolean 
@@ -272,6 +279,9 @@ class ModelCheckpoint(Callback):
             the max number of models to save. Older model checkpoints
             will be overwritten if necessary. Set equal to -1 to have
             no limit
+        mode : string in {'auto', 'min', 'max'}
+            Defines what is considered as a better `monitor`. `auto` means
+            that the direction is inferred (is `acc` in the name then use `max`).
         verbose : integer in {0, 1}
             verbosity
         """
@@ -284,13 +294,15 @@ class ModelCheckpoint(Callback):
         self.save_best_only = save_best_only
         self.save_weights_only = save_weights_only
         self.max_save = max_save
+        self.mode = mode
         self.verbose = verbose
 
         if self.max_save > 0:
             self.old_files = []
 
         # mode = 'min' only supported
-        self.best_loss = float('inf')
+        # self.best_loss = float('inf')
+        self.monitor_op, self.best_loss, _ = _mode_dependent_param(self.mode, self.monitor)
         super(ModelCheckpoint, self).__init__()
 
     def save_checkpoint(self, epoch, file, is_best=False):
@@ -319,14 +331,14 @@ class ModelCheckpoint(Callback):
             if current_loss is None:
                 pass
             else:
-                if current_loss < self.best_loss:
+                if self.monitor_op(current_loss,self.best_loss):
                     if self.verbose > 0:
                         print('\nEpoch %i: improved from %0.4f to %0.4f saving model to %s' % 
                               (epoch+1, self.best_loss, current_loss, file))
                     self.best_loss = current_loss
                     #if self.save_weights_only:
                     #else:
-                    self.save_checkpoint(epoch, file)
+
                     if self.max_save > 0:
                         if len(self.old_files) == self.max_save:
                             try:
@@ -335,10 +347,11 @@ class ModelCheckpoint(Callback):
                                 pass
                             self.old_files = self.old_files[1:]
                         self.old_files.append(file)
+                    self.save_checkpoint(epoch, file)
         else:
             if self.verbose > 0:
                 print('\nEpoch %i: saving model to %s' % (epoch+1, file))
-            self.save_checkpoint(epoch, file)
+
             if self.max_save > 0:
                 if len(self.old_files) == self.max_save:
                     try:
@@ -347,6 +360,7 @@ class ModelCheckpoint(Callback):
                         pass
                     self.old_files = self.old_files[1:]
                 self.old_files.append(file)
+            self.save_checkpoint(epoch, file)
 
 
 class EarlyStopping(Callback):
@@ -357,7 +371,8 @@ class EarlyStopping(Callback):
     def __init__(self, 
                  monitor='val_loss',
                  min_delta=0,
-                 patience=5):
+                 patience=5,
+                 mode="auto"):
         """
         EarlyStopping callback to exit the training loop if training or
         validation loss does not improve by a certain amount for a certain
@@ -365,14 +380,17 @@ class EarlyStopping(Callback):
 
         Arguments
         ---------
-        monitor : string in {'val_loss', 'loss'}
-            whether to monitor train or val loss
+        monitor : string in {'val_loss', 'loss', 'val_*_metric', '*_metric'}
++           whether to monitor train or val loss. Can also give your metric ex: 'val_acc_metric'.
         min_delta : float
             minimum change in monitored value to qualify as improvement.
             This number should be positive.
         patience : integer
             number of epochs to wait for improvment before terminating.
             the counter be reset after each improvment
+         mode : string in {'auto', 'min', 'max'}
+            Defines what is considered as a better `monitor`. `auto` means
+            that the direction is inferred (is `acc` in the name then use `max`).
         """
         self.monitor = monitor
         self.min_delta = min_delta
@@ -380,18 +398,23 @@ class EarlyStopping(Callback):
         self.wait = 0
         self.best_loss = 1e-15
         self.stopped_epoch = 0
+        self.mode = mode
+
+        self.monitor_op, self.best_loss_init, self.min_delta = _mode_dependent_param(self.mode, self.monitor,
+                                                                                     min_delta=min_delta)
         super(EarlyStopping, self).__init__()
 
     def on_train_begin(self, logs=None):
         self.wait = 0
-        self.best_loss = 1e15
+        self.best_loss = self.best_loss_init
 
     def on_epoch_end(self, epoch, logs=None):
         current_loss = logs.get(self.monitor)
         if current_loss is None:
             pass
         else:
-            if (current_loss - self.best_loss) < -self.min_delta:
+            #if (current_loss - self.best_loss) < -self.min_delta:
+            if self.monitor_op(current_loss - self.min_delta, self.best_loss):
                 self.best_loss = current_loss
                 self.wait = 1
             else:
@@ -471,14 +494,15 @@ class ReduceLROnPlateau(Callback):
                  epsilon=0, 
                  cooldown=0, 
                  min_lr=0,
+                 mode="auto",
                  verbose=0):
         """
         Reduce the learning rate if the train or validation loss plateaus
 
         Arguments
         ---------
-        monitor : string in {'loss', 'val_loss'}
-            which metric to monitor
+        monitor : string in {'loss', 'val_loss', 'val_*_metric', '*_metric'}
+            whether to monitor train or val loss. Can also give your metric ex: 'val_acc_metric'.
         factor : floar
             factor to decrease learning rate by
         patience : integer
@@ -489,6 +513,9 @@ class ReduceLROnPlateau(Callback):
             number of epochs to cooldown after a lr reduction
         min_lr : float
             minimum value to ever let the learning rate decrease to
+        mode : string in {'auto', 'min', 'max'}
+            Defines what is considered as a better `monitor`. `auto` means
+            that the direction is inferred (is `acc` in the name then use `max`).
         verbose : integer
             whether to print reduction to console
         """
@@ -503,16 +530,19 @@ class ReduceLROnPlateau(Callback):
         self.cooldown = cooldown
         self.cooldown_counter = 0
         self.wait = 0
+        self.monitor_op = None
+        self.mode = mode
         self.best_loss = 1e15
         self._reset()
+
         super(ReduceLROnPlateau, self).__init__()
 
     def _reset(self):
         """
         Reset the wait and cooldown counters
         """
-        self.monitor_op = lambda a, b: (a - b) < -self.epsilon
-        self.best_loss = 1e15
+        monitor_op, self.best_loss, epsilon = _mode_dependent_param(self.mode, self.monitor, min_delta=self.epsilon)
+        self.monitor_op = lambda a, b: monitor_op(a, b + epsilon)
         self.cooldown_counter = 0
         self.wait = 0
 

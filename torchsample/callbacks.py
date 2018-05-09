@@ -153,6 +153,8 @@ class TQDM(Callback):
         for k, v in logs.items():
             if k.endswith('metric'):
                 log_data[k.split('_metric')[0]] = '%.02f' % v
+            if k == 'lr':
+                log_data[k] = '%.04f' % v[-1]
             else:
                  # log_data[k] = v
                 log_data[k] = '%.04f' % v

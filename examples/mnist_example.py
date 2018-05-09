@@ -77,7 +77,8 @@ if __name__ == "__main__":
                     regularizers=regularizers,
                     constraints=constraints,
                     initializers=initializers,
-                    metrics=metrics)
+                    metrics=metrics,
+                    callbacks=callbacks)
 
     #summary = trainer.summary([1,28,28])
     #print(summary)

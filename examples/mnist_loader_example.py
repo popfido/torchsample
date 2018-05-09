@@ -1,3 +1,4 @@
+# coding=utf-8
 
 import torch as th
 import torch.nn as nn
@@ -15,7 +16,8 @@ from torchsample import TensorDataset
 
 import os
 from torchvision import datasets
-ROOT = '/users/ncullen/desktop/data/mnist'
+
+ROOT = './data'
 dataset = datasets.MNIST(ROOT, train=True, download=True)
 x_train, y_train = th.load(os.path.join(dataset.root, 'processed/training.pt'))
 x_test, y_test = th.load(os.path.join(dataset.root, 'processed/test.pt'))

@@ -10,7 +10,7 @@ class TestMetrics(unittest.TestCase):
     def test_categorical_accuracy(self):
         metric = CategoricalAccuracy()
         predicted = torch.eye(10, requires_grad=True)
-        expected = torch.Tensor(list(range(10)), dtype=torch.long, requires_grad=True)
+        expected = torch.tensor(list(range(10)), dtype=torch.long, requires_grad=True)
         self.assertEqual(metric(predicted, expected), 100.0)
 
         # Set 1st column to ones

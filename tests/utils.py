@@ -1,6 +1,7 @@
-
+# coding=utf-8
 import numpy as np
 import torch as th
+
 
 def get_test_data(num_train=1000, num_test=500, 
                   input_shape=(10,), output_shape=(2,),

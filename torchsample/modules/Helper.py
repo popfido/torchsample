@@ -251,7 +251,7 @@ class MultiInputNoTargetHelper(BaseHelper):
 
     def grab_batch_from_loader(self, loader_iter):
         input_batch = next(loader_iter)
-        return [th.tensor(input_, require_grad=True) for input_ in input_batch], None
+        return [th.tensor(input_, requires_grad=True) for input_ in input_batch], None
 
     def apply_transforms(self, tforms, input_batch, target_batch=None):
         input_batch = [tforms[0](input_) for input_ in input_batch]

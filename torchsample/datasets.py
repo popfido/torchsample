@@ -288,8 +288,10 @@ def default_file_reader(file_path):
         raise ValueError('x should be string, but got %s' % type(file_path))
     return None
 
+
 def is_tuple_or_list(x):
     return isinstance(x, (tuple,list))
+
 
 def _process_transform_argument(tform, num_inputs):
     tform = tform if tform is not None else _pass_through
@@ -301,6 +303,7 @@ def _process_transform_argument(tform, num_inputs):
         tform = [tform] * num_inputs
     return tform
 
+
 def _process_co_transform_argument(tform, num_inputs, num_targets):
     tform = tform if tform is not None else _multi_arg_pass_through
     if is_tuple_or_list(tform):
@@ -311,6 +314,7 @@ def _process_co_transform_argument(tform, num_inputs, num_targets):
         tform = [tform] * min(num_inputs, num_targets)
     return tform
 
+
 def _process_csv_argument(csv):
     if isinstance(csv, str):
         df = pd.read_csv(csv)
@@ -319,6 +323,7 @@ def _process_csv_argument(csv):
     else:
         raise ValueError('csv argument must be string or dataframe')
     return df
+
 
 def _select_dataframe_columns(df, cols):
     if isinstance(cols[0], str):
@@ -329,16 +334,20 @@ def _select_dataframe_columns(df, cols):
         raise ValueError('Provided columns should be string column names or integer column indices')
     return inputs
 
+
 def _process_cols_argument(cols):
     if isinstance(cols, tuple):
         cols = list(cols)
     return cols
 
+
 def _return_first_element_of_list(x):
     return x[0]
 
+
 def _pass_through(x):
     return x
+
 
 def _multi_arg_pass_through(*x):
     return x

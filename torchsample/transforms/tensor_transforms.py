@@ -67,11 +67,13 @@ class ToTensor(object):
 class ToVariable(object):
     """
     Converts a torch.Tensor to autograd.Variable
+
+    Variable has been deprecated in 0.4.0, thus this class would converts a torch.Tensor to a torch.Tensor that has grad.
     """
     def __call__(self, *inputs):
         outputs = []
         for idx, _input in enumerate(inputs):
-            _input = Variable(_input)
+            _input = th.tensor(_input, requires_grad=True)
             outputs.append(_input)
         return outputs if idx > 1 else outputs[0]
 

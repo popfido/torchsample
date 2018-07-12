@@ -153,6 +153,7 @@ def test_affine_transforms_runtime(verbose=1):
                 failures.append((im_key, tf_key))
 
     if verbose > 0:
+        print()
         for k, v in failures:
             print('%s - %s' % (k, v))
 

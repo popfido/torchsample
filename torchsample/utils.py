@@ -9,6 +9,97 @@ import numpy as np
 import warnings
 
 import torch as th
+import torch.nn as nn
+
+from collections import OrderedDict
+
+
+def summary(model, input_size, device="cuda"):
+    """
+    Print Detailed Information by layer for model
+
+    :param model: nn.Module
+        Model to be summarized
+    :param input_size: list or tuple or number
+        Input data batch size of model
+    :param device: string
+        Device to be used to train/compute model
+    :return:
+    """
+    def register_hook(module):
+        def hook(module, input, output):
+            class_name = str(module.__class__).split('.')[-1].split("'")[0]
+            module_idx = len(summary)
+
+            m_key = '%s-%i' % (class_name, module_idx + 1)
+            summary[m_key] = OrderedDict()
+            summary[m_key]['input_shape'] = list(input[0].size())
+            summary[m_key]['input_shape'][0] = -1
+            if isinstance(output, (list, tuple)):
+                summary[m_key]['output_shape'] = [[-1] + list(o.size())[1:] for o in output]
+            else:
+                summary[m_key]['output_shape'] = list(output.size())
+                summary[m_key]['output_shape'][0] = -1
+
+            params = 0
+            if hasattr(module, 'weight') and hasattr(module.weight, 'size'):
+                params += th.prod(th.LongTensor(list(module.weight.size())))
+                summary[m_key]['trainable'] = module.weight.requires_grad
+            if hasattr(module, 'bias') and hasattr(module.bias, 'size'):
+                params += th.prod(th.LongTensor(list(module.bias.size())))
+            summary[m_key]['nb_params'] = params
+
+        if (not isinstance(module, nn.Sequential) and
+                not isinstance(module, nn.ModuleList) and
+                not (module == model)):
+            hooks.append(module.register_forward_hook(hook))
+
+    device = device.lower()
+    assert device in ["cuda", "cpu"], "Input device is not valid, please specify 'cuda' or 'cpu'"
+
+    if device == "cuda" and th.cuda.is_available():
+        dtype = th.cuda.FloatTensor
+    else:
+        dtype = th.FloatTensor
+
+    # check if there are multiple inputs to the network
+    if isinstance(input_size[0], (list, tuple)):
+        x = [th.teosor(th.rand(2, *in_size), requires_grad=True).type(dtype) for in_size in input_size]
+    else:
+        x = th.tensor(th.rand(2, *input_size), requires_grad=True).type(dtype)
+
+    # print(type(x[0]))
+    # create properties
+    summary = OrderedDict()
+    hooks = []
+    # register hook
+    model.apply(register_hook)
+    # make a forward pass
+    # print(x.shape)
+    model(x)
+    # remove these hooks
+    for h in hooks:
+        h.remove()
+
+    print('----------------------------------------------------------------\n' + \
+          '{:>20}  {:>25} {:>15}'.format('Layer (type)', 'Output Shape', 'Param #\n') + \
+          '================================================================')
+    total_params = 0
+    trainable_params = 0
+    for layer in summary:
+        # input_shape, output_shape, trainable, nb_params
+        line_new = '{:>20}  {:>25} {:>15}'.format(layer, str(summary[layer]['output_shape']),
+                                                  '{0:,}'.format(summary[layer]['nb_params']))
+        total_params += summary[layer]['nb_params']
+        if 'trainable' in summary[layer]:
+            if summary[layer]['trainable']:
+                trainable_params += summary[layer]['nb_params']
+        print(line_new)
+    print('================================================================' + \
+          'Total params: {0:,}'.format(total_params) + \
+          'Trainable params: {0:,}'.format(trainable_params) + \
+          'Non-trainable params: {0:,}'.format(total_params - trainable_params) + \
+          '----------------------------------------------------------------')
 
 
 def th_allclose(x, y, rtol=1.e-5, atol=1.e-8, equal_nan=False):
@@ -32,6 +123,7 @@ def th_flatten(x):
     """Flatten tensor"""
     return x.contiguous().view(-1)
 
+
 def th_c_flatten(x):
     """
     Flatten tensor, leaving channel intact.
@@ -50,8 +142,10 @@ def th_bc_flatten(x):
 def th_zeros_like(x):
     return x.new().resize_as_(x).zero_()
 
+
 def th_ones_like(x):
     return x.new().resize_as_(x).fill_(1)
+
 
 def th_constant_like(x, val):
     return x.new().resize_as_(x).fill_(val)
@@ -210,14 +304,12 @@ def th_affine3d(x, matrix, mode='trilinear', center=True):
     # make a meshgrid of normal coordinates
     coords = th_iterproduct(x.size(1),x.size(2),x.size(3)).float()
 
-
     if center:
         # shift the coordinates so center is the origin
         coords[:,0] = coords[:,0] - (x.size(1) / 2. - 0.5)
         coords[:,1] = coords[:,1] - (x.size(2) / 2. - 0.5)
         coords[:,2] = coords[:,2] - (x.size(3) / 2. - 0.5)
 
-    
     # apply the coordinate transformation
     new_coords = coords.mm(A.t().contiguous()) + b.expand_as(coords)
 
